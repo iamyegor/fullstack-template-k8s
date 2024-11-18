@@ -14,7 +14,7 @@ helm install \
   --set crds.enabled=true
 ```
 
-# Create yaml file based on nginx.conf
+# Create yaml file based on nginx.conf (also not need for this project)
 
 ``` sh
 kubectl create configmap image-server-config --from-file=templates/imageServer/nginx.conf -o yaml --dry-run=client > templates/imageServer/image-server-config.yaml
