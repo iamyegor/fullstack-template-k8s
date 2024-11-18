@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.cms.cache.name }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ .Values.cms.cache.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.cms.cache.name }}
+    spec:
+      containers:
+        - name: redis
+          image: {{ .Values.cms.cache.image }}
+          ports:
+            - containerPort: {{ .Values.cms.cache.port }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.cms.cache.name }}
+spec:
+  type: ClusterIP
+  ports:
+    - port: {{ .Values.cms.cache.port }}
+      targetPort: {{ .Values.cms.cache.port }}
+  selector:
+    app: {{ .Values.cms.cache.name }}

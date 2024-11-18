@@ -1,0 +1,79 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.cms.name }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ .Values.cms.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.cms.name }}
+    spec:
+      initContainers:
+        - name: check-db-ready
+          image: postgres:alpine
+          command: ['sh', '-c', 
+            'until pg_isready -h {{ .Values.cms.database.name }} -p {{ .Values.cms.database.port }}; do echo waiting for database; sleep 2; done;']
+        - name: check-redis-ready
+          image: redis:alpine
+          command: ['sh', '-c', 
+            'until redis-cli -h {{ .Values.cms.cache.name }} -p {{ .Values.cms.cache.port }} ping; do echo waiting for redis; sleep 2; done;']
+      containers:
+        - name: directus
+          image: {{ .Values.cms.image }}
+          ports:
+            - containerPort: {{ .Values.cms.port }}
+          env:
+            - name: SECRET
+              value: {{ .Values.cms.secret }}
+            - name: DB_CLIENT
+              value: "pg"
+            - name: DB_HOST
+              value: {{ .Values.cms.database.name }}
+            - name: DB_PORT
+              value: "{{ .Values.cms.database.port }}"
+            - name: DB_DATABASE
+              value: {{ .Values.cms.database.connection.db }}
+            - name: DB_USER
+              value: {{ .Values.cms.database.connection.user }}
+            - name: DB_PASSWORD
+              value: {{ .Values.cms.database.connection.password }}
+            - name: CACHE_ENABLED
+              value: "true"
+            - name: CACHE_AUTO_PURGE
+              value: "true"
+            - name: CACHE_STORE
+              value: "redis"
+            - name: REDIS
+              value: "redis://{{ .Values.cms.cache.name }}:{{ .Values.cms.cache.port }}"
+            - name: ADMIN_EMAIL
+              value: astery227@gmail.com
+            - name: ADMIN_PASSWORD
+              value: Fult-du-tri
+          volumeMounts:
+            - name: uploads
+              mountPath: /directus/uploads
+            - name: extensions
+              mountPath: /directus/extensions
+      volumes:
+        - name: uploads
+          hostPath:
+            path: /data/{{ .Values.cms.name }}/uploads
+        - name: extensions
+          hostPath:
+            path: /data/{{ .Values.cms.name }}/extensions
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.cms.name }}
+spec:
+  type: ClusterIP
+  ports:
+    - port: {{ .Values.cms.port }}
+      targetPort: {{ .Values.cms.port }}
+  selector:
+    app: {{ .Values.cms.name }}

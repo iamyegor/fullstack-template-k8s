@@ -1,0 +1,70 @@
+address: fullstacktemplate.ru
+secret: efd370b6-ed07-43a7-b0d0-733da56d81f2
+
+backend:
+  name: template
+  port: 8080
+  image: jasonstathamdev/template:app-backend
+  migrator:
+    name: template-migrator
+    image: jasonstathamdev/template:app-migrator
+  database:
+    name: template-database
+    port: 5432
+    connection:
+      user: user
+      password: Hea-tuch-clob
+      db: main_db
+
+auth:
+  name: template-auth
+  port: 8080
+  image: jasonstathamdev/template:auth-backend
+  migrator:
+    name: template-auth-migrator
+    image: jasonstathamdev/template:auth-migrator
+  database:
+    name: template-auth-database
+    port: 5432
+    connection:
+      user: user
+      password: Cruc-zirk-pust
+      db: main_db
+
+frontend:
+  name: template-frontend
+  port: 3000
+  image: jasonstathamdev/template:frontend
+
+imageServer:
+  name: template-image-server
+  port: 80
+  config: image-server-config
+
+ingress:
+  name: template-ingress
+
+rabbitmq:
+  name: template-rabbitmq
+  image: rabbitmq:management
+  port: 5672
+  username: admin
+  password: Kern-vull-friw
+
+cms:
+  name: template-cms
+  secret: 5b403b97-ddd5-4eb6-bbee-0ab573062c6a
+  port: 8055
+  image: directus/directus:11.0.2
+  database:
+    name: template-cms-database
+    port: 5432
+    image: postgis/postgis:13-master
+    connection:
+      user: directus
+      password: Gre-yam-hunk
+      db: directus
+  cache:
+    name: template-cms-cache
+    port: 6379
+    image: redis:6

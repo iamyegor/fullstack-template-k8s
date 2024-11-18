@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.frontend.name }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ .Values.frontend.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.frontend.name }}
+        date: "{{ now | unixEpoch }}"
+    spec:
+      terminationGracePeriodSeconds: 1
+      containers:
+        - name: {{ .Values.frontend.name }}
+          image: {{ .Values.frontend.image }}
+          imagePullPolicy: Always
+          ports:
+            - containerPort: {{ .Values.frontend.port }}
+          env:
+            - name: NEXT_PUBLIC_API
+              value: https://api.{{ .Values.address }}
+            - name: NEXT_PUBLIC_AUTH_API
+              value: https://auth.{{ .Values.address }}
+            - name: NEXT_PUBLIC_CMS
+              value: https://cms.{{ .Values.address }}
+            - name: NEXT_PUBLIC_POSTHOG_KEY
+              value: phc_2coUXDRKDuogg2NNN6iVC4ilwsYKhz2VczdonyPAYhG
+            - name: NEXT_PUBLIC_POSTHOG_HOST
+              value: https://eu.i.posthog.com
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.frontend.name }}
+spec:
+  type: ClusterIP
+  ports:
+    - port: {{ .Values.frontend.port }}
+      targetPort: {{ .Values.frontend.port }}
+  selector:
+    app: {{ .Values.frontend.name }}

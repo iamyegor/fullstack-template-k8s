@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.backend.name }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ .Values.backend.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.backend.name }}
+        date: "{{ now | unixEpoch }}"
+    spec:
+      containers:
+        - name: {{ .Values.backend.name }}
+          image: {{ .Values.backend.image }}
+          imagePullPolicy: Always
+          ports:
+            - containerPort: {{ .Values.backend.port }}
+          env:
+            - name: CONNECTION_STRING
+              value: "Host={{ .Values.backend.database.name }};Port=5432;Username={{ .Values.backend.database.connection.user }};Password={{ .Values.backend.database.connection.password }};Database={{ .Values.backend.database.connection.db }}"
+            - name: SECRET
+              value: {{ .Values.secret }}
+            - name: RABBITMQ_HOST
+              value: amqp://{{ .Values.rabbitmq.name }}:{{ .Values.rabbitmq.port }}
+            - name: RABBITMQ_USER
+              value: {{ .Values.rabbitmq.username }}
+            - name: RABBITMQ_PASSWORD
+              value: {{ .Values.rabbitmq.password }}

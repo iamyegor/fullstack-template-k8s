@@ -1,0 +1,22 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ .Values.auth.migrator.name }}
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-delete-policy": hook-succeeded
+spec:
+  backoffLimit: 4
+  template:
+    metadata:
+      labels:
+        date: "{{ now | unixEpoch }}"
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: {{ .Values.auth.migrator.name }}
+          image: {{ .Values.auth.migrator.image }}
+          imagePullPolicy: Always
+          env:
+            - name: CONNECTION_STRING
+              value: Host={{ .Values.auth.database.name }};Port=5432;Username={{ .Values.auth.database.connection.user }};Password={{ .Values.auth.database.connection.password }};Database={{ .Values.auth.database.connection.db }}
